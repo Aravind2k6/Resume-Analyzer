@@ -1,15 +1,31 @@
-import fitz
+import os
+
+from pypdf import PdfReader
 
 
-def extract_text_from_pdf(file_path):
+def extract_resume_text(file_path: str) -> str:
 
-    text = ""
+    if not os.path.exists(file_path):
+        raise FileNotFoundError(
+            "Resume file not found"
+        )
 
-    pdf_document = fitz.open(file_path)
+    reader = PdfReader(file_path)
 
-    for page in pdf_document:
-        text += page.get_text()
+    text = []
 
-    pdf_document.close()
+    for page in reader.pages:
 
-    return text
+        page_text = page.extract_text()
+
+        if page_text:
+            text.append(page_text)
+
+    final_text = "\n".join(text)
+
+    if not final_text.strip():
+        raise ValueError(
+            "Could not extract text from this PDF"
+        )
+
+    return final_text.strip()
